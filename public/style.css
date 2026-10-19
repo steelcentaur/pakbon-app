@@ -116,12 +116,24 @@ details[open] summary { margin-bottom: 8px; }
 .status-row > span { font-size: 22px; line-height: 1.2; }
 code { word-break: break-all; font-size: 13px; background: var(--bg); padding: 2px 5px; border-radius: 4px; }
 label { display: block; font-weight: 600; margin: 12px 0; }
-input[type=password] {
+input[type=password], #manual-form input, #manual-form select, #manual-form textarea {
   display: block; width: 100%; margin-top: 6px;
-  padding: 14px; font-size: 17px;
+  padding: 12px; font: inherit; font-weight: 400;
   border: 1px solid var(--line); border-radius: 12px;
   background: var(--bg); color: var(--text);
 }
+#manual-form textarea { resize: vertical; }
+#manual-form h3 { font-size: 16px; margin: 16px 0 4px; }
+#manual-form label { margin: 10px 0; }
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; min-width: 0; }
+.item-row { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.item-row select { flex: 1; min-width: 0; margin: 0 !important; }
+.item-row input { width: 70px !important; flex: 0 0 70px; margin: 0 !important; text-align: center; }
+.item-row button { width: 44px; flex: 0 0 44px; padding: 10px 0; margin: 0; }
+.form-actions { margin-top: 16px; }
+.form-actions button { margin: 0; }
+.badge.channel-marktplaats { color: #e8750c; }
 .switch { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; }
 .switch input { width: 24px; height: 24px; }
 body.login { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 16px; }

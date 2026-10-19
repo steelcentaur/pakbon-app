@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
-const CHANNEL_NAMES = { bol: 'bol', ebay: 'eBay', demo: 'test' };
+const CHANNEL_NAMES = { bol: 'bol', ebay: 'eBay', marktplaats: 'Marktplaats', demo: 'test' };
 let orders = [];
+let products = [];
 
 function toast(message, isError) {
   const t = $('toast');
@@ -148,6 +149,110 @@ async function loadStatus() {
   $('ebay-connect').textContent = e.connected ? 'eBay opnieuw koppelen' : 'Koppel eBay-account';
   $('ebay-disconnect').hidden = !e.connected;
 }
+
+// ---------- Marktplaats-bestelling invoeren ----------
+
+// Haalt naam, straat, postcode en plaats uit geplakte tekst zoals "Jan Jansen\nDorpsstraat 12\n1234 AB Utrecht".
+function parseAddress(raw) {
+  const lines = raw.split(/\r?\n|,/).map((l) => l.trim()).filter(Boolean)
+    .filter((l) => !/^(nederland|netherlands|the netherlands|belgi[eë]|belgium)$/i.test(l));
+  const result = { name: '', line1: '', line2: '', postalCode: '', city: '', country: /belgi|belgium/i.test(raw) ? 'BE' : 'NL' };
+  let pcIndex = -1;
+  lines.forEach((line, i) => {
+    if (pcIndex >= 0) return;
+    const nl = line.match(/^(\d{4})\s*([A-Za-z]{2})\b\s*(.*)$/);
+    const be = line.match(/^(?:B-)?(\d{4})\s+([A-Za-zÀ-ÿ' .-]{2,})$/);
+    if (nl) {
+      result.postalCode = `${nl[1]} ${nl[2].toUpperCase()}`;
+      result.city = nl[3] || lines[i + 1] || '';
+      pcIndex = i;
+    } else if (be) {
+      result.postalCode = be[1];
+      result.city = be[2];
+      result.country = 'BE';
+      pcIndex = i;
+    }
+  });
+  const before = pcIndex >= 0 ? lines.slice(0, pcIndex) : lines;
+  const streetIdx = before.findIndex((l, i) => i > 0 && /\d/.test(l));
+  result.name = before[0] || '';
+  if (streetIdx > 0) {
+    result.line1 = before[streetIdx];
+    result.line2 = before.filter((_, i) => i !== 0 && i !== streetIdx).join(', ');
+  } else {
+    result.line1 = before[1] || '';
+    result.line2 = before.slice(2).join(', ');
+  }
+  return result;
+}
+
+function itemRow(selected) {
+  const select = el('select', {}, ...products.map((p) => el('option', { value: p.ean }, p.title)));
+  if (selected) select.value = selected;
+  const qty = el('input', { type: 'number', min: '1', max: '999', value: '1', inputmode: 'numeric' });
+  const row = el('div', { class: 'item-row' }, select, qty,
+    el('button', { type: 'button', title: 'Verwijderen', onclick: () => { if ($('m-items').children.length > 1) row.remove(); } }, '✕'));
+  return row;
+}
+
+function resetManualForm() {
+  for (const id of ['m-paste', 'm-name', 'm-line1', 'm-line2', 'm-postcode', 'm-city']) $(id).value = '';
+  $('m-country').value = 'NL';
+  $('m-items').replaceChildren(itemRow());
+}
+
+async function openManualForm() {
+  if (!products.length) products = (await api('/api/products')).products;
+  resetManualForm();
+  $('manual-form').hidden = false;
+  $('manual-open').hidden = true;
+  $('manual-form').scrollIntoView({ behavior: 'smooth' });
+  $('m-paste').focus();
+}
+
+function closeManualForm() {
+  $('manual-form').hidden = true;
+  $('manual-open').hidden = false;
+}
+
+async function saveManualOrder() {
+  const items = [...$('m-items').children].map((row) => {
+    const ean = row.querySelector('select').value;
+    const p = products.find((x) => x.ean === ean) || {};
+    return { ean, title: p.title, quantity: row.querySelector('input').value };
+  });
+  $('m-save').disabled = true;
+  try {
+    const res = await api('/api/manual-orders', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: $('m-name').value, line1: $('m-line1').value, line2: $('m-line2').value,
+        postalCode: $('m-postcode').value, city: $('m-city').value, country: $('m-country').value, items,
+      }),
+    });
+    toast(`✅ Bestelling ${res.orderNumber} toegevoegd.`);
+    closeManualForm();
+    loadOrders();
+  } catch (err) {
+    toast(err.message, true);
+  } finally {
+    $('m-save').disabled = false;
+  }
+}
+
+$('manual-open').addEventListener('click', () => openManualForm().catch((err) => toast(err.message, true)));
+$('m-cancel').addEventListener('click', closeManualForm);
+$('m-save').addEventListener('click', saveManualOrder);
+$('m-add-item').addEventListener('click', () => $('m-items').append(itemRow()));
+$('m-paste').addEventListener('input', () => {
+  const a = parseAddress($('m-paste').value);
+  $('m-name').value = a.name;
+  $('m-line1').value = a.line1;
+  $('m-line2').value = a.line2;
+  $('m-postcode').value = a.postalCode;
+  $('m-city').value = a.city;
+  $('m-country').value = a.country;
+});
 
 function showPage() {
   const page = location.hash === '#instellingen' ? 'instellingen' : 'bestellingen';

@@ -8,6 +8,8 @@ const { buildPdf } = require('./pdf');
 const ebay = require('./channels/ebay');
 const bol = require('./channels/bol');
 const demo = require('./channels/demo');
+const manual = require('./channels/manual');
+const products = require('./products');
 
 const app = express();
 app.set('trust proxy', true);
@@ -90,8 +92,8 @@ async function demoMode() {
 }
 
 async function activeChannels() {
-  if (await demoMode()) return [demo];
-  return [bol, ebay].filter((c) => c.configured());
+  if (await demoMode()) return [demo, manual];
+  return [bol, ebay].filter((c) => c.configured()).concat(manual);
 }
 
 // Haalt alle kanalen op; als er één niet werkt, krijg je de rest wel en een waarschuwing.
@@ -99,7 +101,7 @@ async function allOpenOrders() {
   const orders = [];
   const warnings = [];
   const channels = await activeChannels();
-  if (!channels.length) warnings.push('Er is nog geen verkoopkanaal ingesteld. Kijk bij Instellingen wat je nog moet invullen.');
+  if (!channels.some((c) => c !== manual)) warnings.push('bol en eBay zijn nog niet ingesteld (zie ⚙️). Marktplaats-bestellingen kun je wel al toevoegen.');
   const results = await Promise.allSettled(channels.map((c) => c.getOpenOrders()));
   for (const r of results) {
     if (r.status === 'fulfilled') orders.push(...r.value);
@@ -182,6 +184,19 @@ app.post('/api/orders/:channel/:id/shipped', wrapAsync(async (req, res) => {
   const channel = (await activeChannels()).find((c) => c.name === req.params.channel);
   if (!channel) return res.status(400).json({ error: 'Onbekend verkoopkanaal' });
   await channel.markShipped(req.params.id);
+  res.json({ ok: true });
+}));
+
+// ---------- Zelf ingevoerde bestellingen (Marktplaats) ----------
+app.get('/api/products', (req, res) => res.json({ products }));
+
+app.post('/api/manual-orders', wrapAsync(async (req, res) => {
+  const order = await manual.add(req.body || {});
+  res.json({ ok: true, orderNumber: order.orderNumber });
+}));
+
+app.delete('/api/manual-orders/:id', wrapAsync(async (req, res) => {
+  await manual.remove(req.params.id);
   res.json({ ok: true });
 }));
 

@@ -26,7 +26,33 @@
     </section>
 
     <a id="download" class="button primary big-button" href="/api/pdf">🖨️ Pakbonnen downloaden</a>
-    <button id="refresh">🔄 Vernieuwen</button>
+    <div class="row">
+      <button id="refresh">🔄 Vernieuwen</button>
+      <button id="manual-open">➕ Marktplaats</button>
+    </div>
+
+    <section id="manual-form" class="card" hidden>
+      <h2>Marktplaats-bestelling toevoegen</h2>
+      <label>Plak hier het adres uit de chat
+        <textarea id="m-paste" rows="4" placeholder="Jan Jansen&#10;Dorpsstraat 12&#10;1234 AB Utrecht"></textarea>
+      </label>
+      <p class="meta">De velden hieronder worden dan vanzelf ingevuld. Controleer ze even.</p>
+      <label>Naam<input id="m-name" autocomplete="off"></label>
+      <label>Straat en huisnummer<input id="m-line1" autocomplete="off"></label>
+      <label>Extra adresregel <span class="meta">(optioneel)</span><input id="m-line2" autocomplete="off"></label>
+      <div class="row">
+        <label>Postcode<input id="m-postcode" autocomplete="off"></label>
+        <label>Plaats<input id="m-city" autocomplete="off"></label>
+      </div>
+      <label>Land<select id="m-country"><option value="NL">Nederland</option><option value="BE">België</option></select></label>
+      <h3>Producten</h3>
+      <div id="m-items"></div>
+      <button id="m-add-item" class="small">+ Nog een product</button>
+      <div class="row form-actions">
+        <button id="m-cancel">Annuleren</button>
+        <button id="m-save" class="primary">Opslaan</button>
+      </div>
+    </section>
 
     <div id="orders"></div>
 
@@ -35,7 +61,7 @@
     <details class="card help">
       <summary>Hoe werkt het?</summary>
       <ol>
-        <li><strong>Vernieuwen</strong> haalt de nieuwe bestellingen van bol en eBay op.</li>
+        <li><strong>Vernieuwen</strong> haalt de nieuwe bestellingen van bol en eBay op. Marktplaats-bestellingen voeg je toe met <strong>➕ Marktplaats</strong>: plak het adres uit de chat en kies de producten.</li>
         <li><strong>Pakbonnen downloaden</strong> geeft één PDF met alle nieuwe bestellingen. Open die in de Fichero-app en print.</li>
         <li>Knip het adres eraf, plak het op de envelop en stop het briefje bij het product.</li>
         <li>Klaar met inpakken? Tik op <strong>Geprinte als verzonden melden</strong>.</li>

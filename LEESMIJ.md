@@ -66,7 +66,19 @@ Beide adressen staan ook in de app bij **Instellingen**.
 eBay geeft bij een bestelling het **Aangepast label (SKU)** door. Zet dat in elke advertentie op de EAN,
 dan staat de EAN op de pakbon.
 
+## 6. Marktplaats-bestellingen
+
+Marktplaats heeft geen koppeling voor bestellingen, dus die voer je zelf in:
+
+1. Tik op **➕ Marktplaats**.
+2. Plak het adres dat de koper in de chat stuurt. Naam, straat, postcode en plaats worden vanzelf ingevuld; controleer ze even.
+3. Kies de producten en aantallen en tik op **Opslaan**.
+
+De bestelling krijgt een nummer zoals `MP-261021-01` en komt op dezelfde pakbon-PDF als bol.
+Met **Verzonden** verdwijnt hij uit de lijst en wordt het adres gewist.
+Producten of pakketten toevoegen aan het keuzelijstje kan in `products.js`.
+
 ## Wat de app bewaart
 
-Alleen de eBay-sleutel en welke bestellingen al geprint zijn (bestelnummers, geen adressen).
-Klantgegevens worden bij elk verzoek vers bij bol en eBay opgehaald en niet opgeslagen.
+De eBay-sleutel, welke bestellingen al geprint zijn (bestelnummers) en de Marktplaats-bestellingen die je zelf invoert,
+tot je ze als verzonden markeert. Klantgegevens van bol en eBay worden bij elk verzoek vers opgehaald en niet opgeslagen.

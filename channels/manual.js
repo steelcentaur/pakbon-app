@@ -2,6 +2,29 @@
 // Het adres wordt alleen bewaard tot je de bestelling als verzonden markeert; daarna wordt alles gewist.
 const crypto = require('crypto');
 const store = require('../store');
+const products = require('../products');
+
+// Een pakket wordt vervangen door de losse artikelen, zodat de pakbon precies zegt wat erin moet.
+function expandBundles(items) {
+  const out = [];
+  for (const item of items) {
+    const p = products.find((x) => x.ean === item.ean);
+    if (p && p.bundle) {
+      for (const [ean, qty] of p.bundle) {
+        const part = products.find((x) => x.ean === ean);
+        out.push({ ean, title: part ? part.title : ean, quantity: qty * item.quantity });
+      }
+    } else out.push(item);
+  }
+  // Dezelfde artikelen samenvoegen
+  const merged = [];
+  for (const item of out) {
+    const same = merged.find((m) => m.ean && m.ean === item.ean);
+    if (same) same.quantity += item.quantity;
+    else merged.push({ ...item });
+  }
+  return merged;
+}
 
 const KEY = 'manual_orders';
 
@@ -23,9 +46,9 @@ async function nextOrderNumber() {
 }
 
 async function add(input) {
-  const items = (Array.isArray(input.items) ? input.items : [])
+  const items = expandBundles((Array.isArray(input.items) ? input.items : [])
     .map((i) => ({ ean: text(i.ean, 20), title: text(i.title, 200), quantity: Math.max(1, Math.min(999, parseInt(i.quantity, 10) || 1)) }))
-    .filter((i) => i.title);
+    .filter((i) => i.title));
   const order = {
     channel: 'marktplaats',
     id: crypto.randomUUID(),

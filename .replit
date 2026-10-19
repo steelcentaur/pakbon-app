@@ -1,0 +1,11 @@
+modules = ["nodejs-20"]
+run = "npm install && npm start"
+
+[deployment]
+build = ["npm", "install"]
+run = ["npm", "start"]
+deploymentTarget = "autoscale"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0064d2">
+  <title>Pakbonnen</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>📦 Pakbonnen</h1>
+    <nav>
+      <a href="#bestellingen" id="tab-bestellingen">Bestellingen</a>
+      <a href="#instellingen" id="tab-instellingen">⚙️</a>
+    </nav>
+  </header>
+
+  <main id="page-bestellingen">
+    <p id="demo-banner" class="notice" hidden>🧪 Testmodus: je ziet verzonnen bestellingen. Uitzetten kan bij ⚙️.</p>
+    <div id="warnings"></div>
+
+    <section class="hero card">
+      <div class="big" id="count">…</div>
+      <div class="meta" id="summary">Bestellingen laden…</div>
+    </section>
+
+    <a id="download" class="button primary big-button" href="/api/pdf">🖨️ Pakbonnen downloaden</a>
+    <button id="refresh">🔄 Vernieuwen</button>
+
+    <div id="orders"></div>
+
+    <button id="ship-all" class="success" hidden></button>
+
+    <details class="card help">
+      <summary>Hoe werkt het?</summary>
+      <ol>
+        <li><strong>Vernieuwen</strong> haalt de nieuwe bestellingen van bol en eBay op.</li>
+        <li><strong>Pakbonnen downloaden</strong> geeft één PDF met alle nieuwe bestellingen. Open die in de Fichero-app en print.</li>
+        <li>Knip het adres eraf, plak het op de envelop en stop het briefje bij het product.</li>
+        <li>Klaar met inpakken? Tik op <strong>Geprinte als verzonden melden</strong>.</li>
+      </ol>
+    </details>
+  </main>
+
+  <main id="page-instellingen" hidden>
+    <section class="card">
+      <h2>Verkoopkanalen</h2>
+      <div class="status-row"><span id="bol-icon">⏳</span><div><strong>bol.com</strong><div id="bol-status" class="meta">Laden…</div></div></div>
+      <div class="status-row"><span id="ebay-icon">⏳</span><div><strong>eBay</strong><div id="ebay-status" class="meta">Laden…</div></div></div>
+      <a id="ebay-connect" class="button primary" href="/auth/ebay/start" hidden>Koppel eBay-account</a>
+      <button id="ebay-disconnect" class="link" hidden>eBay-koppeling verbreken</button>
+    </section>
+
+    <section class="card">
+      <label class="switch"><input type="checkbox" id="demo-toggle"> 🧪 Testmodus</label>
+      <p class="meta">Toont twee verzonnen bestellingen, zodat je de pakbon kunt proberen. In de testmodus gaat er niets naar bol of eBay.</p>
+    </section>
+
+    <details class="card">
+      <summary>Welke Secrets vul ik in bij Replit?</summary>
+      <p class="meta">Open je Repl, klik links op het slotje <strong>Secrets</strong> en voeg toe:</p>
+      <ul class="meta">
+        <li><code>APP_PASSWORD</code>: het wachtwoord voor deze app</li>
+        <li><code>BOL_CLIENT_ID</code> en <code>BOL_CLIENT_SECRET</code>: uit het bol partnerplatform (Instellingen → API)</li>
+        <li><code>BOL_TRANSPORTER_CODE</code>: optioneel, standaard <code>TNT</code> (PostNL, zonder track &amp; trace)</li>
+        <li><code>EBAY_ENV</code>: <code>sandbox</code> om te testen, <code>production</code> voor echt</li>
+        <li><code>EBAY_CLIENT_ID</code>, <code>EBAY_CLIENT_SECRET</code>, <code>EBAY_RUNAME</code>: van developer.ebay.com</li>
+        <li><code>EBAY_VERIFICATION_TOKEN</code>: zelf verzonnen code van 32-80 tekens (letters, cijfers, _ en -)</li>
+      </ul>
+    </details>
+
+    <details class="card">
+      <summary>Gegevens voor developer.ebay.com</summary>
+      <p class="meta"><strong>Auth accepted URL</strong> (bij je RuName):</p>
+      <p><code id="callback-url"></code></p>
+      <p class="meta"><strong>Marketplace account deletion endpoint</strong>:</p>
+      <p><code id="deletion-url"></code></p>
+      <p id="verification-hint" class="meta"></p>
+    </details>
+
+    <a class="button" href="/logout">Uitloggen</a>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
